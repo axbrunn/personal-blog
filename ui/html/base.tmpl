@@ -1,0 +1,29 @@
+{{define "base"}}
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Alex Brunn | {{template "title" .}}</title>
+        <link rel='stylesheet' href='/static/css/styles.css'>
+        <link rel='shortcut icon' href='/static/public/img/favicon.ico' type='image/x-icon'>
+        <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    </head>
+    <body hx-boost="true">
+        <div class="layout">
+            <header>
+                <div class="container">
+                    {{template "header" .}}
+                </div>
+            </header>
+            <main>
+                <div class="container">
+                    {{template "main" .}}
+                </div>
+            </main>
+            <footer>
+                {{template "footer" .}}
+            </footer>
+        </div>
+    </body>
+    </html>
+{{end}}

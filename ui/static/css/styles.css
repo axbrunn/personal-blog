@@ -1,0 +1,101 @@
+:root {
+    --rp-base: #232136;
+    --rp-surface: #2a273f;
+    --rp-overlay: #393552;
+    --rp-text: #e0def4;
+    --rp-gold: #f6c177;
+    --rp-love: #eb6f92;
+    --rp-foam: #9ccfd8;
+    --rp-iris: #c4a7e7;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    background-color: var(--rp-base);
+    color: var(--rp-text);
+}
+
+.layout {
+    display: grid;
+    grid-template-areas:
+        "header"
+        "main" 
+        "footer";
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+}
+
+.flex_row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.container {
+    margin: 0 auto;
+    max-width: 1080px;
+}
+
+/* Header */
+header {
+    grid-area: header;
+    background: var(--rp-surface);
+    padding: .5rem;
+}
+
+header h1 a {
+    color: var(--rp-gold);
+    text-decoration: none;
+}
+
+/* Nav */
+nav {
+    background: var(--rp-surface);
+    margin: 20px;
+    font-size: 0;
+}
+
+nav a {
+    display: inline-block;
+    color: var(--rp-foam);
+    text-decoration: none;
+    padding: 1rem;
+    font-size: 16px;
+}
+
+nav a:hover {
+    color: var(--rp-iris);
+    background-color: var(--rp-overlay);
+}
+
+nav a.active {
+    background-color: var(--rp-base);
+}
+
+/* Main */
+main {
+    grid-area: main;
+    padding: 1rem;
+}
+
+/* Footer */
+footer {
+    grid-area: footer;
+    background: var(--rp-surface);
+    text-align: center;
+    border-top: 1px solid var(--rp-overlay);
+}
+
+footer a {
+    color: var(--rp-foam);
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+}
+
+footer a:hover {
+    color: var(--rp-iris);
+}
