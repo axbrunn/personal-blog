@@ -9,12 +9,15 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/axbrunn/http_web/internals/models"
+
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type server struct {
 	router        *http.ServeMux
 	logger        *slog.Logger
+	posts         *models.PostModel
 	templateCache map[string]*template.Template
 }
 
@@ -35,51 +38,35 @@ func run() error {
 	var cfg config
 
 	flag.StringVar(&cfg.addr, "addr", ":4000", "HTTP network address")
-	// Define a new command-line flag for the MySQL DSN string.
 	flag.StringVar(&cfg.dsn, "dsn", "web:pass@/personalblog?parseTime=true", "MySQL data source name")
 
 	flag.Parse()
 
-	srv := newServer(cfg)
+	// Move db setup here
+	db, err := openDB(cfg.dsn)
+	if err != nil {
+		return err
+	}
+	defer db.Close() // This will now close *after* the server exits
 
-	srv.logger.Info("Started server", slog.String("addr", cfg.addr))
-
-	return http.ListenAndServe(cfg.addr, srv.routes())
-}
-
-func newServer(cfg config) *server {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level:     slog.LevelDebug,
 		AddSource: true,
 	}))
 
-	// To keep the main() function tidy I've put the code for creating a connection
-	// pool into the separate openDB() function below. We pass openDB() the DSN
-	// from the command-line flag.
-	db, err := openDB(cfg.dsn)
-	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	}
-	// We also defer a call to db.Close(), so that the connection pool is closed
-	// before the main() function exits.
-	defer db.Close()
-
-	// Initialize a new template cache...
 	templateCache, err := newTemplateCache()
 	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	srv := &server{
 		logger:        logger,
 		templateCache: templateCache,
+		posts:         &models.PostModel{DB: db},
 	}
 
-	srv.routes()
-
-	return srv
+	logger.Info("Started server", slog.String("addr", cfg.addr))
+	return http.ListenAndServe(cfg.addr, srv.routes())
 }
 
 // The openDB() function wraps sql.Open() and returns a sql.DB connection pool

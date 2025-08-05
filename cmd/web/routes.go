@@ -12,6 +12,7 @@ func (srv *server) routes() *http.ServeMux {
 
 	mux.HandleFunc("GET /{$}", srv.makeHandler(srv.handleHome()))
 	mux.HandleFunc("GET /page1", srv.makeHandler(srv.handlePage1()))
+	mux.HandleFunc("GET /posts/view/{id}", srv.makeHandler(srv.postView()))
 
 	return mux
 }
