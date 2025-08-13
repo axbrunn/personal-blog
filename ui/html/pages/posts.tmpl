@@ -1,0 +1,35 @@
+{{define "title"}}Posts{{end}}
+
+{{define "main"}}
+
+{{if .Posts}}
+<div class="posts-grid">
+    {{range .Posts}}
+    <div class="post-card">
+        <small class="post-date">
+            {{humanDate .Created_at}}
+        </small>
+        <h2>
+            <a href='/posts/{{.Slug}}' class="post-title">
+                {{.Title}}
+            </a>
+        </h2>
+        <p class="post-excerpt">
+            {{.Excerpt}}
+        </p>
+        <hr>
+        <div class="flex_row">
+            <p class="post-author">
+                {{.Author}}
+            </p>
+            <a href='/posts/{{.Slug}}' class="post-link">
+                Lees meer
+            </a>
+        </div>
+    </div>
+    {{end}}
+</div>
+{{else}}
+    <p>There's nothing to see here... yet!</p>
+{{end}}
+{{end}}

@@ -10,6 +10,7 @@ type Post struct {
 	ID         int
 	Title      string
 	Content    string
+	Excerpt    string
 	Author     string
 	Created_at time.Time
 	Updated_at time.Time
@@ -25,29 +26,16 @@ func (m *PostModel) Insert(title string, content string, expires int) (int, erro
 	return 0, nil
 }
 
-func (m *PostModel) Get(id int) (Post, error) {
-	// Write the SQL statement we want to execute. Again, I've split it over two
-	// lines for readability.
+func (m *PostModel) Get(slug string) (Post, error) {
 	stmt := `SELECT id, title, content, author, created_at, updated_at, slug FROM blog_posts
-WHERE id = ?`
-	// Use the QueryRow() method on the connection pool to execute our
-	// SQL statement, passing in the untrusted id variable as the value for the
-	// placeholder parameter. This returns a pointer to a sql.Row object which
-	// holds the result from the database.
-	row := m.DB.QueryRow(stmt, id)
-	// Initialize a new zeroed Snippet struct.
+WHERE slug = ?`
+
+	row := m.DB.QueryRow(stmt, slug)
+
 	var p Post
-	// Use row.Scan() to copy the values from each field in sql.Row to the
-	// corresponding field in the Snippet struct. Notice that the arguments
-	// to row.Scan are *pointers* to the place you want to copy the data into,
-	// and the number of arguments must be exactly the same as the number of
-	// columns returned by your statement.
+
 	err := row.Scan(&p.ID, &p.Title, &p.Content, &p.Author, &p.Created_at, &p.Updated_at, &p.Slug)
 	if err != nil {
-		// If the query returns no rows, then row.Scan() will return a
-		// sql.ErrNoRows error. We use the errors.Is() function check for that
-		// error specifically, and return our own ErrNoRecord error
-		// instead (we'll create this in a moment).
 		if errors.Is(err, sql.ErrNoRows) {
 			return Post{}, ErrNoRecord
 		} else {
@@ -60,5 +48,31 @@ WHERE id = ?`
 
 // This will return the 10 most recently created posts.
 func (m *PostModel) Latest() ([]Post, error) {
-	return nil, nil
+	stmt := `SELECT id, title, author, excerpt, created_at, updated_at, slug FROM blog_posts ORDER BY id DESC LIMIT 10`
+
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var posts []Post
+
+	for rows.Next() {
+		var p Post
+
+		err = rows.Scan(&p.ID, &p.Title, &p.Author, &p.Excerpt, &p.Created_at, &p.Updated_at, &p.Slug)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, p)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }

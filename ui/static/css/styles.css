@@ -2,11 +2,26 @@
     --rp-base: #232136;
     --rp-surface: #2a273f;
     --rp-overlay: #393552;
+    --rp-subtle: #908caa;
     --rp-text: #e0def4;
     --rp-gold: #f6c177;
     --rp-love: #eb6f92;
     --rp-foam: #9ccfd8;
     --rp-iris: #c4a7e7;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --rp-base: #faf4ed;
+        --rp-surface: #fffaf3;
+        --rp-overlay: #f2e9e1;
+        --rp-subtle: #9893a5;
+        --rp-text: #575279;
+        --rp-gold: #ea9d34;
+        --rp-love: #b4637a;
+        --rp-foam: #286983;
+        --rp-iris: #907aa9;
+    }
 }
 
 body {
@@ -17,6 +32,16 @@ body {
     line-height: 1.4;
     background-color: var(--rp-base);
     color: var(--rp-text);
+}
+
+hr {
+    margin: 0 auto;
+    border: none;
+    border-bottom: 1px solid var(--rp-gold);
+    margin-bottom: .7rem;
+    position: relative;
+    transition: box-shadow 200ms ease-in-out;
+    box-shadow: 0px 0px 0px 0px var(--rp-gold);
 }
 
 .layout {
@@ -33,6 +58,7 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
 }
 
 .container {
@@ -44,6 +70,7 @@ body {
 header {
     grid-area: header;
     background: var(--rp-surface);
+    border-bottom: 1px solid var(--rp-overlay);
     padding: .5rem;
 }
 
@@ -79,7 +106,12 @@ nav a.active {
 /* Main */
 main {
     grid-area: main;
-    padding: 1rem;
+    padding: 3rem;
+}
+
+article {
+    margin: 0 auto;
+    max-width: 800px;
 }
 
 /* Footer */
@@ -98,4 +130,56 @@ footer a {
 
 footer a:hover {
     color: var(--rp-iris);
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.post-card {
+    background-color: var(--rp-overlay);
+    border-left: 5px solid var(--rp-gold);
+    border-radius: 5px;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.post-title {
+    font-size: 1.2rem;
+    text-decoration: none;
+    color: var(--rp-text);
+}
+
+@media (max-width: 900px) {
+    .posts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .posts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.post-date {
+    font-size: 0.8rem;
+    color: var(--rp-subtle);
+}
+
+.post-excerpt {
+    color: var(--rp-text);
+}
+
+.post-author {
+    font-size: 0.8rem;
+    color: var(--rp-love);
+    margin: 0;
+}
+
+.post-link {
+    text-decoration: none;
+    color: var(--rp-foam);
 }

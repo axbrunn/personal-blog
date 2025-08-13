@@ -3,10 +3,25 @@ package main
 import (
 	"html/template"
 	"path/filepath"
+	"time"
+
+	"github.com/axbrunn/http_web/internals/models"
 )
 
 type templateData struct {
-	ActivePage string
+	CurrentYear int
+	ActivePage  string
+	Post        models.Post
+	Posts       []models.Post
+	HTMLContent template.HTML
+}
+
+func humanDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04")
+}
+
+var functions = template.FuncMap{
+	"humanDate": humanDate,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
@@ -21,22 +36,25 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		// Extract the file name (like 'home.tmpl') from the full filepath
 		// and assign it to the name variable.
 		name := filepath.Base(page)
-		// Create a slice containing the filepaths for our base template, any
-		// partials and the page.
-		files := []string{
-			"./ui/html/base.tmpl",
-			"./ui/html/layout/header.tmpl",
-			"./ui/html/layout/navigation.tmpl",
-			"./ui/html/layout/footer.tmpl",
-			page,
-		}
-		// Parse the files into a template set.
-		ts, err := template.ParseFiles(files...)
+
+		// The template.FuncMap must be registered with the template set before you
+		// call the ParseFiles() method. This means we have to use template.New() to
+		// create an empty template set, use the Funcs() method to register the
+		// template.FuncMap, and then parse the file as normal.
+		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
 		if err != nil {
 			return nil, err
 		}
-		// Add the template set to the map, using the name of the page
-		// (like 'home.tmpl') as the key.
+
+		ts, err = ts.ParseGlob("./ui/html/layout/*.tmpl")
+		if err != nil {
+			return nil, err
+		}
+
+		ts, err = ts.ParseFiles(page)
+		if err != nil {
+			return nil, err
+		}
 		cache[name] = ts
 	}
 	// Return the map.
