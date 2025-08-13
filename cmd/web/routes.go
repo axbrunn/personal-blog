@@ -11,7 +11,8 @@ func (srv *server) routes() *http.ServeMux {
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	mux.HandleFunc("GET /{$}", srv.makeHandler(srv.handleHome()))
-	mux.HandleFunc("GET /page1", srv.makeHandler(srv.handlePage1()))
+	mux.HandleFunc("GET /posts", srv.makeHandler(srv.handlePosts()))
+	mux.HandleFunc("GET /posts/{slug}", srv.makeHandler(srv.postView()))
 
 	return mux
 }

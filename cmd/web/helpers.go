@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 func (srv *server) serverError(w http.ResponseWriter, r *http.Request, err error) {
@@ -37,5 +38,11 @@ func (srv *server) render(w http.ResponseWriter, r *http.Request, status int, pa
 	err := ts.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		srv.serverError(w, r, err)
+	}
+}
+
+func (srv *server) newTemplateData(r *http.Request) templateData {
+	return templateData{
+		CurrentYear: time.Now().Year(),
 	}
 }
