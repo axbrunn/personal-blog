@@ -2,7 +2,12 @@
 
 {{define "main"}}
     <article>
-        <small>{{ .Post.Created_at }}</small>
+        <div class="flex_row_between">
+            <small>{{ .Post.Created_at }}</small>
+            <form action="/posts/delete/{{ .Post.ID }}" method="POST">
+                <button class="delete-button" type="submit">Delete</button>
+            </form>
+        </div>
         {{ .HTMLContent }}
     </article>
 {{end}}

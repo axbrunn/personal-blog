@@ -1,6 +1,7 @@
 :root {
     --rp-base: #232136;
     --rp-surface: #2a273f;
+    --rp-surface-header: rgba(42, 39, 63, 0.85);
     --rp-overlay: #393552;
     --rp-subtle: #908caa;
     --rp-text: #e0def4;
@@ -14,6 +15,7 @@
     :root {
         --rp-base: #faf4ed;
         --rp-surface: #fffaf3;
+        --rp-surface-header: rgba(255, 250, 243, 0.85);
         --rp-overlay: #f2e9e1;
         --rp-subtle: #9893a5;
         --rp-text: #575279;
@@ -151,8 +153,11 @@ pre code {
 
 /* Header */
 header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     grid-area: header;
-    background: var(--rp-surface);
+    background: var(--rp-surface-header);
     border-bottom: 1px solid var(--rp-overlay);
     padding: 0 1rem;
 }
@@ -288,4 +293,23 @@ footer a:hover {
     border-radius: 10px;
     font-family: Arial, sans-serif;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.delete-button {
+    background-color: var(--rp-surface);
+    color: var(--rp-love);
+    padding: 12px 20px;
+    border: 1px solid var(--rp-love);
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.delete-button:hover {
+    background-color: var(--rp-overlay);
+}
+
+.delete-button:active {
+    background-color: #b4637a;
 }
