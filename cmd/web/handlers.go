@@ -1,40 +1,63 @@
 package main
 
 import (
-	"bytes"
 	"errors"
+	"fmt"
 	"html/template"
 	"net/http"
 
-	chromahtml "github.com/alecthomas/chroma/formatters/html"
 	"github.com/axbrunn/http_web/internals/models"
-	"github.com/yuin/goldmark"
-	highlighting "github.com/yuin/goldmark-highlighting"
-	"github.com/yuin/goldmark/parser"
 )
 
-func (s *server) makeHandler(fn func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+func (srv *server) makeHandler(fn func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fn(w, r)
 	}
 }
 
-func (srv *server) handleHome() http.HandlerFunc {
+func (srv *server) handleHomeGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Server", "Go")
-
 		data := srv.newTemplateData(r)
 		data.ActivePage = "home"
 
-		// Use the new render helper.
 		srv.render(w, r, http.StatusOK, "home.tmpl", data)
 	}
 }
 
-func (srv *server) handlePosts() http.HandlerFunc {
+func (srv *server) handlePostCreateGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Server", "Go")
+		data := srv.newTemplateData(r)
+		data.ActivePage = "create"
 
+		srv.render(w, r, http.StatusOK, "create.tmpl", data)
+	}
+}
+
+func (srv *server) handlePostCreatePost() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			srv.clientError(w, http.StatusBadRequest)
+			return
+		}
+
+		author := r.PostForm.Get("author")
+		slug := r.PostForm.Get("slug")
+		title := r.PostForm.Get("title")
+		excerpt := r.PostForm.Get("excerpt")
+		content := r.PostForm.Get("content")
+
+		s, err := srv.posts.Insert(title, content, excerpt, author, slug)
+		if err != nil {
+			srv.serverError(w, r, err)
+			return
+		}
+		http.Redirect(w, r, fmt.Sprintf("/posts/%s", s), http.StatusSeeOther)
+	}
+}
+
+func (srv *server) handlePostsGet() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		posts, err := srv.posts.Latest()
 		if err != nil {
 			srv.serverError(w, r, err)
@@ -44,18 +67,14 @@ func (srv *server) handlePosts() http.HandlerFunc {
 		data.ActivePage = "posts"
 		data.Posts = posts
 
-		// Use the new render helper.
 		srv.render(w, r, http.StatusOK, "posts.tmpl", data)
 	}
 }
 
-func (srv *server) postView() http.HandlerFunc {
+func (srv *server) handlePostViewGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		slug := r.PathValue("slug")
 
-		// Use the SnippetModel's Get() method to retrieve the data for a
-		// specific record based on its ID. If no matching record is found,
-		// return a 404 Not Found response.
 		post, err := srv.posts.Get(slug)
 		if err != nil {
 			if errors.Is(err, models.ErrNoRecord) {
@@ -66,24 +85,8 @@ func (srv *server) postView() http.HandlerFunc {
 			return
 		}
 
-		// Markdown naar HTML
-		var buf bytes.Buffer
-		// Goldmark configureren
-		md := goldmark.New(
-			goldmark.WithExtensions(
-				highlighting.NewHighlighting(
-					highlighting.WithStyle("dracula"),
-					highlighting.WithFormatOptions(
-						chromahtml.WithLineNumbers(true),
-					),
-				),
-			),
-			goldmark.WithParserOptions(
-				parser.WithAutoHeadingID(),
-			),
-		)
-
-		if err := md.Convert([]byte(post.Content), &buf); err != nil {
+		htmlContent, err := srv.renderMarkdownToHTML(post.Content)
+		if err != nil {
 			srv.serverError(w, r, err)
 			return
 		}
@@ -91,7 +94,7 @@ func (srv *server) postView() http.HandlerFunc {
 		data := srv.newTemplateData(r)
 		data.ActivePage = "posts"
 		data.Post = post
-		data.HTMLContent = template.HTML(buf.String())
+		data.HTMLContent = template.HTML(htmlContent)
 
 		srv.render(w, r, http.StatusOK, "post.tmpl", data)
 	}

@@ -3,25 +3,27 @@
 {{define "main"}}
 
 {{if .Posts}}
-<div class="posts-grid">
+<div class="posts_grid">
     {{range .Posts}}
-    <div class="post-card">
-        <small class="post-date">
-            {{humanDate .Created_at}}
-        </small>
-        <h2>
-            <a href='/posts/{{.Slug}}' class="post-title">
-                {{.Title}}
-            </a>
-        </h2>
-        <p class="post-excerpt">
+    <div class="post_card">
+        <div class="post_header">
+            <small class="post_date">
+                {{humanDate .Created_at}}
+            </small>
+                <h2>
+                    <a href='/posts/{{.Slug}}' class="post_title">
+                        {{.Title}}
+                    </a>
+                </h2>
+        </div>
+        <p class="post_excerpt">
             {{.Excerpt}}
         </p>
-        <div class="flex_row">
-            <p class="post-author">
+        <div class="flex_row_between post_footer">
+            <p class="post_author">
                 {{.Author}}
             </p>
-            <a href='/posts/{{.Slug}}' class="post-link">
+            <a href='/posts/{{.Slug}}' class="post_link">
                 Lees meer
             </a>
         </div>
