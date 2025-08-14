@@ -82,3 +82,10 @@ func (m *PostModel) Latest() ([]Post, error) {
 
 	return posts, nil
 }
+
+func (m *PostModel) Delete(id int) error {
+	stmt := `DELETE FROM blog_posts WHERE id = ?`
+
+	_, err := m.DB.Exec(stmt, id)
+	return err
+}

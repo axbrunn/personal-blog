@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/axbrunn/http_web/internals/models"
 )
@@ -53,6 +54,24 @@ func (srv *server) handlePostCreatePost() http.HandlerFunc {
 			return
 		}
 		http.Redirect(w, r, fmt.Sprintf("/posts/%s", s), http.StatusSeeOther)
+	}
+}
+
+func (srv *server) handlePostDeletePost() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil || id < 1 {
+			srv.clientError(w, http.StatusBadRequest)
+			return
+		}
+
+		err = srv.posts.Delete(id)
+		if err != nil {
+			srv.serverError(w, r, err)
+			return
+		}
+
+		http.Redirect(w, r, "/posts", http.StatusSeeOther)
 	}
 }
 
