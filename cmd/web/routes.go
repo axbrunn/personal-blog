@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/justinas/alice"
 	"net/http"
 )
 
@@ -10,9 +11,13 @@ func (srv *server) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("GET /{$}", srv.makeHandler(srv.handleHome()))
-	mux.HandleFunc("GET /posts", srv.makeHandler(srv.handlePosts()))
-	mux.HandleFunc("GET /posts/{slug}", srv.makeHandler(srv.postView()))
+	mux.HandleFunc("GET /{$}", srv.makeHandler(srv.handleHomeGet()))
+	mux.HandleFunc("GET /posts", srv.makeHandler(srv.handlePostsGet()))
+	mux.HandleFunc("GET /posts/{slug}", srv.makeHandler(srv.handlePostViewGet()))
+	mux.HandleFunc("GET /posts/create", srv.makeHandler(srv.handlePostCreateGet()))
+	mux.HandleFunc("POST /posts/create", srv.makeHandler(srv.handlePostCreatePost()))
 
-	return commenHeaders(mux)
+	standard := alice.New(srv.recoverPanic, srv.logRequest, commonHeaders)
+
+	return standard.Then(mux)
 }

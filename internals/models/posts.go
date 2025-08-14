@@ -21,9 +21,16 @@ type PostModel struct {
 	DB *sql.DB
 }
 
-// This will insert a new post into the database.
-func (m *PostModel) Insert(title string, content string, expires int) (int, error) {
-	return 0, nil
+func (m *PostModel) Insert(title string, content string, excerpt string, author string, slug string) (string, error) {
+	stmt := `INSERT INTO blog_posts (title, content, excerpt, author, slug)
+	         VALUES (?, ?, ?, ?, ?)`
+
+	_, err := m.DB.Exec(stmt, title, content, excerpt, author, slug)
+	if err != nil {
+		return "", err
+	}
+
+	return slug, nil
 }
 
 func (m *PostModel) Get(slug string) (Post, error) {
@@ -46,7 +53,6 @@ WHERE slug = ?`
 	return p, nil
 }
 
-// This will return the 10 most recently created posts.
 func (m *PostModel) Latest() ([]Post, error) {
 	stmt := `SELECT id, title, author, excerpt, created_at, updated_at, slug FROM blog_posts ORDER BY id DESC LIMIT 10`
 

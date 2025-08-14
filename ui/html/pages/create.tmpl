@@ -1,0 +1,28 @@
+{{define "title"}}Create a New Post{{end}}
+
+{{define "main"}}
+    <form action='/posts/create' method='POST'>
+        <div class="flex_row_between">
+            <div>
+                <label for="author">Author:</label>
+                <input type="text" id="author" name="author" required>
+            </div>
+
+            <div>
+                <label for="slug">Slug (URL-friendly):</label>
+                <input type="text" id="slug" name="slug" required>
+            </div>
+        </div>
+
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="excerpt">Excerpt:</label>
+        <textarea id="excerpt" name="excerpt" rows="3"></textarea>
+
+        <label for="content">Content (Markdown):</label>
+        <textarea id="content" name="content" rows="18" required></textarea>
+
+        <input type="submit" value="Create Post">
+    </form>
+{{end}}

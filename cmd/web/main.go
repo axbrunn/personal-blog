@@ -29,7 +29,10 @@ type config struct {
 
 func main() {
 	if err := run(); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		_, err := fmt.Fprintf(os.Stderr, "%s\n", err)
+		if err != nil {
+			return
+		}
 		os.Exit(1)
 	}
 }
@@ -50,8 +53,7 @@ func run() error {
 	defer db.Close() // This will now close *after* the server exits
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelDebug,
-		AddSource: true,
+		Level: slog.LevelDebug,
 	}))
 
 	templateCache, err := newTemplateCache()
