@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (srv *server) routes() *http.ServeMux {
+func (srv *server) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
@@ -14,5 +14,5 @@ func (srv *server) routes() *http.ServeMux {
 	mux.HandleFunc("GET /posts", srv.makeHandler(srv.handlePosts()))
 	mux.HandleFunc("GET /posts/{slug}", srv.makeHandler(srv.postView()))
 
-	return mux
+	return commenHeaders(mux)
 }

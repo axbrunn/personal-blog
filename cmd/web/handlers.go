@@ -21,8 +21,6 @@ func (s *server) makeHandler(fn func(w http.ResponseWriter, r *http.Request)) ht
 
 func (srv *server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Server", "Go")
-
 		data := srv.newTemplateData(r)
 		data.ActivePage = "home"
 
@@ -33,8 +31,6 @@ func (srv *server) handleHome() http.HandlerFunc {
 
 func (srv *server) handlePosts() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Server", "Go")
-
 		posts, err := srv.posts.Latest()
 		if err != nil {
 			srv.serverError(w, r, err)
@@ -75,6 +71,7 @@ func (srv *server) postView() http.HandlerFunc {
 					highlighting.WithStyle("dracula"),
 					highlighting.WithFormatOptions(
 						chromahtml.WithLineNumbers(true),
+						chromahtml.WithClasses(true),
 					),
 				),
 			),
