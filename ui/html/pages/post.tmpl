@@ -7,6 +7,7 @@
             <form action="/posts/delete/{{ .Post.ID }}" method="POST">
                 <button class="delete-button" type="submit">Delete</button>
             </form>
+            <a href="/posts/update/{{ .Post.Slug }}">Update</a>
         </div>
         {{ .HTMLContent }}
     </article>

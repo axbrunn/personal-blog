@@ -17,6 +17,8 @@ func (srv *server) routes() http.Handler {
 	mux.HandleFunc("GET /posts/create", srv.makeHandler(srv.handlePostCreateGet()))
 	mux.HandleFunc("POST /posts/create", srv.makeHandler(srv.handlePostCreatePost()))
 	mux.HandleFunc("POST /posts/delete/{id}", srv.makeHandler(srv.handlePostDeletePost()))
+	mux.HandleFunc("GET /posts/update/{slug}", srv.makeHandler(srv.handlePostUpdateGet()))
+	mux.HandleFunc("POST /posts/update/{id}", srv.makeHandler(srv.handlePostUpdatePost()))
 
 	standard := alice.New(srv.recoverPanic, srv.logRequest, commonHeaders)
 

@@ -57,6 +57,21 @@ func (srv *server) handlePostCreatePost() http.HandlerFunc {
 	}
 }
 
+func (srv *server) handlePostUpdateGet() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := srv.newTemplateData(r)
+		data.ActivePage = "update"
+
+		srv.render(w, r, http.StatusOK, "update.tmpl", data)
+	}
+}
+
+func (srv *server) handlePostUpdatePost() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}
+
 func (srv *server) handlePostDeletePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(r.PathValue("id"))
