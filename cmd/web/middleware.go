@@ -36,11 +36,13 @@ func (srv *server) logRequest(next http.Handler) http.Handler {
 func (srv *server) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
-			if err := recover(); err != nil {
-				// Set a "Connection: close" header on the response.
+			pv := recover()
+
+			if pv != nil {
 				w.Header().Set("Connection", "close")
 				// Call the app.serverError helper method to return a 500
-				srv.serverError(w, r, fmt.Errorf("%s", err))
+				// Internal Server response.
+				srv.serverError(w, r, fmt.Errorf("%v", pv))
 			}
 		}()
 		next.ServeHTTP(w, r)

@@ -59,8 +59,21 @@ func (srv *server) handlePostCreatePost() http.HandlerFunc {
 
 func (srv *server) handlePostUpdateGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		slug := r.PathValue("slug")
+
+		post, err := srv.posts.Get(slug)
+		if err != nil {
+			if errors.Is(err, models.ErrNoRecord) {
+				http.NotFound(w, r)
+			} else {
+				srv.serverError(w, r, err)
+			}
+			return
+		}
+
 		data := srv.newTemplateData(r)
-		data.ActivePage = "update"
+		data.ActivePage = "posts"
+		data.Post = post
 
 		srv.render(w, r, http.StatusOK, "update.tmpl", data)
 	}
@@ -68,7 +81,30 @@ func (srv *server) handlePostUpdateGet() http.HandlerFunc {
 
 func (srv *server) handlePostUpdatePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil || id < 1 {
+			srv.clientError(w, http.StatusBadRequest)
+			return
+		}
 
+		err = r.ParseForm()
+		if err != nil {
+			srv.clientError(w, http.StatusBadRequest)
+			return
+		}
+
+		author := r.PostForm.Get("author")
+		slug := r.PostForm.Get("slug")
+		title := r.PostForm.Get("title")
+		excerpt := r.PostForm.Get("excerpt")
+		content := r.PostForm.Get("content")
+
+		s, err := srv.posts.Update(id, title, content, excerpt, author, slug)
+		if err != nil {
+			srv.serverError(w, r, err)
+			return
+		}
+		http.Redirect(w, r, fmt.Sprintf("/posts/%s", s), http.StatusSeeOther)
 	}
 }
 

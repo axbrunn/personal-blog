@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/justinas/alice"
 	"net/http"
+
+	"github.com/justinas/alice"
 )
 
 func (srv *server) routes() http.Handler {

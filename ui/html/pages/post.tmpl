@@ -4,11 +4,15 @@
     <article>
         <div class="flex_row_between">
             <small>{{ .Post.Created_at }}</small>
+        </div>
+        {{ .HTMLContent }}
+        <div class="flex_row_between">
             <form action="/posts/delete/{{ .Post.ID }}" method="POST">
                 <button class="delete-button" type="submit">Delete</button>
             </form>
-            <a href="/posts/update/{{ .Post.Slug }}">Update</a>
+            <form action="/posts/update/{{ .Post.Slug }}" method="GET">
+                <button class="update-button" type="submit">Update</button>
+            </form>
         </div>
-        {{ .HTMLContent }}
     </article>
 {{end}}
