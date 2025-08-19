@@ -2,8 +2,9 @@
 
 {{define "main"}}
     <article>
-        <div class="flex_row_between">
-            <small>{{ .Post.Created_at }}</small>
+        <div>
+            <small class="post_author">{{ .Post.Author }}</small>
+            <small>, {{ humanDate .Post.Created_at }}</small>
         </div>
         {{ .HTMLContent }}
         <div class="flex_row_between">
