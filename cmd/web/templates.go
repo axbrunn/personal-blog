@@ -14,6 +14,7 @@ type templateData struct {
 	Post        models.Post
 	Posts       []models.Post
 	HTMLContent template.HTML
+	Form        any
 }
 
 func humanDate(t time.Time) string {

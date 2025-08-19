@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/axbrunn/http_web/internals/models"
+	"github.com/go-playground/form"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -19,6 +20,7 @@ type server struct {
 	logger        *slog.Logger
 	posts         *models.PostModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 type config struct {
@@ -61,10 +63,13 @@ func run() error {
 		return err
 	}
 
+	formDecoder := form.NewDecoder()
+
 	srv := &server{
 		logger:        logger,
 		templateCache: templateCache,
 		posts:         &models.PostModel{DB: db},
+		formDecoder:   formDecoder,
 	}
 
 	logger.Info("Started server", slog.String("addr", cfg.addr))

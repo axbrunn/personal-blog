@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/axbrunn/http_web/internals/models"
+	"github.com/axbrunn/http_web/internals/validator"
 )
 
 func (srv *server) makeHandler(fn func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
@@ -29,26 +30,51 @@ func (srv *server) handlePostCreateGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := srv.newTemplateData(r)
 		data.ActivePage = "create"
+		data.Form = postCreateForm{}
 
 		srv.render(w, r, http.StatusOK, "create.tmpl", data)
 	}
 }
 
+type postCreateForm struct {
+	Author              string `form:"author"`
+	Slug                string `form:"slug"`
+	Title               string `form:"title"`
+	Excerpt             string `form:"excerpt"`
+	Content             string `form:"content"`
+	validator.Validator `form:"-"`
+}
+
 func (srv *server) handlePostCreatePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
+		r.Body = http.MaxBytesReader(w, r.Body, 4096)
+
+		var form postCreateForm
+		err := srv.decodePostForm(r, &form)
 		if err != nil {
 			srv.clientError(w, http.StatusBadRequest)
 			return
 		}
 
-		author := r.PostForm.Get("author")
-		slug := r.PostForm.Get("slug")
-		title := r.PostForm.Get("title")
-		excerpt := r.PostForm.Get("excerpt")
-		content := r.PostForm.Get("content")
+		form.CheckField(validator.NotBlank(form.Author), "author", "This field cannot be blank")
+		form.CheckField(validator.MaxChars(form.Author, 100), "author", "This field cannot be more than 100 characters long")
+		form.CheckField(validator.NotBlank(form.Slug), "slug", "This field cannot be blank")
+		form.CheckField(validator.MaxChars(form.Slug, 100), "slug", "This field cannot be more than 100 characters long")
+		form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
+		form.CheckField(validator.MaxChars(form.Title, 255), "title", "This field cannot be more than 255 characters long")
+		form.CheckField(validator.NotBlank(form.Excerpt), "excerpt", "This field cannot be blank")
+		form.CheckField(validator.MaxChars(form.Excerpt, 255), "excerpt", "This field cannot be more than 255 characters long")
+		form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
 
-		s, err := srv.posts.Insert(title, content, excerpt, author, slug)
+		if !form.Valid() {
+			data := srv.newTemplateData(r)
+			data.Form = form
+			data.ActivePage = "create"
+			srv.render(w, r, http.StatusUnprocessableEntity, "create.tmpl", data)
+			return
+		}
+
+		s, err := srv.posts.Insert(form.Title, form.Content, form.Excerpt, form.Author, form.Slug)
 		if err != nil {
 			srv.serverError(w, r, err)
 			return
@@ -87,19 +113,34 @@ func (srv *server) handlePostUpdatePost() http.HandlerFunc {
 			return
 		}
 
-		err = r.ParseForm()
+		r.Body = http.MaxBytesReader(w, r.Body, 4096)
+
+		var form postCreateForm
+		err = srv.decodePostForm(r, &form)
 		if err != nil {
 			srv.clientError(w, http.StatusBadRequest)
 			return
 		}
 
-		author := r.PostForm.Get("author")
-		slug := r.PostForm.Get("slug")
-		title := r.PostForm.Get("title")
-		excerpt := r.PostForm.Get("excerpt")
-		content := r.PostForm.Get("content")
+		form.CheckField(validator.NotBlank(form.Author), "author", "This field cannot be blank")
+		form.CheckField(validator.MaxChars(form.Author, 100), "author", "This field cannot be more than 100 characters long")
+		form.CheckField(validator.NotBlank(form.Slug), "slug", "This field cannot be blank")
+		form.CheckField(validator.MaxChars(form.Slug, 100), "slug", "This field cannot be more than 100 characters long")
+		form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
+		form.CheckField(validator.MaxChars(form.Title, 255), "title", "This field cannot be more than 255 characters long")
+		form.CheckField(validator.NotBlank(form.Excerpt), "excerpt", "This field cannot be blank")
+		form.CheckField(validator.MaxChars(form.Excerpt, 255), "excerpt", "This field cannot be more than 255 characters long")
+		form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
 
-		s, err := srv.posts.Update(id, title, content, excerpt, author, slug)
+		if !form.Valid() {
+			data := srv.newTemplateData(r)
+			data.Form = form
+			data.ActivePage = "create"
+			srv.render(w, r, http.StatusUnprocessableEntity, "create.tmpl", data)
+			return
+		}
+
+		s, err := srv.posts.Update(id, form.Title, form.Content, form.Excerpt, form.Author, form.Slug)
 		if err != nil {
 			srv.serverError(w, r, err)
 			return

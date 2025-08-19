@@ -53,8 +53,19 @@ h3 {
 label {
     display: block;
     margin-bottom: 6px;
-    font-weight: bold;
     color: var(--rp-text);
+}
+
+.label-with-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.label-with-error .error {
+    color: var(--rp-love) !important;
+    padding: 2px;
+    font-weight: 500;
 }
 
 input[type="text"],
@@ -68,13 +79,14 @@ textarea {
     font-size: 1em;
     color: var(--rp-text);
     box-sizing: border-box;
+    resize: none;
 }
 
 input[type="submit"] {
     background-color: var(--rp-surface);
-    color: var(--rp-text);
+    color: var(--rp-foam);
     padding: 12px 20px;
-    border: 1px solid var(--rp-text);
+    border: 1px solid var(--rp-foam);
     border-radius: 6px;
     font-size: 1em;
     cursor: pointer;
@@ -87,7 +99,7 @@ input[type="submit"]:hover {
 }
 
 p code, li code {
-    background-color: rgba(255, 215, 0, 0.1);
+    background-color: var(--rp-overlay);
     padding: 0.1em 0.3em;
     border-radius: 4px;
     font-size: 0.95em;
@@ -96,14 +108,12 @@ p code, li code {
 
 /* Code block (markdown ```code```) */
 pre {
-    background-color: rgba(0,0,0,0.05);
     padding: 1em;
     border-radius: 6px;
     overflow-x: auto;
 }
 
 pre code {
-    font-family: 'Roboto Mono', monospace;
     font-size: 0.95em;
     background: none;
     padding: 0;
@@ -205,7 +215,7 @@ nav a:hover {
 
 nav a.active {
     text-decoration: underline wavy;
-    text-underline-offset: 8px;
+    text-underline-offset: 6px;
 }
 
 /* Main */
