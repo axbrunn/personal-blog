@@ -26,6 +26,16 @@ func (srv *server) handleHomeGet() http.HandlerFunc {
 	}
 }
 
+type postCreateForm struct {
+	ID                  int    `form:"-"`
+	Author              string `form:"author"`
+	Slug                string `form:"slug"`
+	Title               string `form:"title"`
+	Excerpt             string `form:"excerpt"`
+	Content             string `form:"content"`
+	validator.Validator `form:"-"`
+}
+
 func (srv *server) handlePostCreateGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := srv.newTemplateData(r)
@@ -34,15 +44,6 @@ func (srv *server) handlePostCreateGet() http.HandlerFunc {
 
 		srv.render(w, r, http.StatusOK, "create.tmpl", data)
 	}
-}
-
-type postCreateForm struct {
-	Author              string `form:"author"`
-	Slug                string `form:"slug"`
-	Title               string `form:"title"`
-	Excerpt             string `form:"excerpt"`
-	Content             string `form:"content"`
-	validator.Validator `form:"-"`
 }
 
 func (srv *server) handlePostCreatePost() http.HandlerFunc {
@@ -100,6 +101,14 @@ func (srv *server) handlePostUpdateGet() http.HandlerFunc {
 		data := srv.newTemplateData(r)
 		data.ActivePage = "posts"
 		data.Post = post
+		data.Form = postCreateForm{
+			ID:      post.ID,
+			Author:  post.Author,
+			Slug:    post.Slug,
+			Title:   post.Title,
+			Excerpt: post.Excerpt,
+			Content: post.Content,
+		}
 
 		srv.render(w, r, http.StatusOK, "update.tmpl", data)
 	}
@@ -122,6 +131,7 @@ func (srv *server) handlePostUpdatePost() http.HandlerFunc {
 			return
 		}
 
+		form.ID = id
 		form.CheckField(validator.NotBlank(form.Author), "author", "This field cannot be blank")
 		form.CheckField(validator.MaxChars(form.Author, 100), "author", "This field cannot be more than 100 characters long")
 		form.CheckField(validator.NotBlank(form.Slug), "slug", "This field cannot be blank")
@@ -136,7 +146,7 @@ func (srv *server) handlePostUpdatePost() http.HandlerFunc {
 			data := srv.newTemplateData(r)
 			data.Form = form
 			data.ActivePage = "create"
-			srv.render(w, r, http.StatusUnprocessableEntity, "create.tmpl", data)
+			srv.render(w, r, http.StatusUnprocessableEntity, "update.tmpl", data)
 			return
 		}
 
