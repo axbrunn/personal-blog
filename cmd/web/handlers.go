@@ -80,6 +80,9 @@ func (srv *server) handlePostCreatePost() http.HandlerFunc {
 			srv.serverError(w, r, err)
 			return
 		}
+
+		srv.sessionMGR.Put(r.Context(), "flash", "Post successfully created!")
+
 		http.Redirect(w, r, fmt.Sprintf("/posts/%s", s), http.StatusSeeOther)
 	}
 }
@@ -155,6 +158,9 @@ func (srv *server) handlePostUpdatePost() http.HandlerFunc {
 			srv.serverError(w, r, err)
 			return
 		}
+
+		srv.sessionMGR.Put(r.Context(), "flash", "Post successfully updated!")
+
 		http.Redirect(w, r, fmt.Sprintf("/posts/%s", s), http.StatusSeeOther)
 	}
 }
@@ -172,6 +178,8 @@ func (srv *server) handlePostDeletePost() http.HandlerFunc {
 			srv.serverError(w, r, err)
 			return
 		}
+
+		srv.sessionMGR.Put(r.Context(), "flash", "Post successfully deleted!")
 
 		http.Redirect(w, r, "/posts", http.StatusSeeOther)
 	}

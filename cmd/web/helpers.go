@@ -7,9 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	chromahtml "github.com/alecthomas/chroma/formatters/html"
 	"github.com/yuin/goldmark"
-	highlighting "github.com/yuin/goldmark-highlighting"
 	"github.com/yuin/goldmark/parser"
 
 	"github.com/go-playground/form/v4"
@@ -48,6 +46,8 @@ func (srv *server) render(w http.ResponseWriter, r *http.Request, status int, pa
 func (srv *server) newTemplateData(r *http.Request) templateData {
 	return templateData{
 		CurrentYear: time.Now().Year(),
+
+		Flash: srv.sessionMGR.PopString(r.Context(), "flash"),
 	}
 }
 
@@ -55,15 +55,6 @@ func (srv *server) renderMarkdownToHTML(input string) (string, error) {
 	var buf bytes.Buffer
 
 	md := goldmark.New(
-		goldmark.WithExtensions(
-			highlighting.NewHighlighting(
-				highlighting.WithStyle("dracula"),
-				highlighting.WithFormatOptions(
-					chromahtml.WithLineNumbers(true),
-					chromahtml.WithClasses(true),
-				),
-			),
-		),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),
 		),
