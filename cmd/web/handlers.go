@@ -48,7 +48,8 @@ func (srv *server) handlePostCreateGet() http.HandlerFunc {
 
 func (srv *server) handlePostCreatePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, 4096)
+		// 2 MiB
+		r.Body = http.MaxBytesReader(w, r.Body, 2<<20)
 
 		var form postCreateForm
 		err := srv.decodePostForm(r, &form)
@@ -125,7 +126,8 @@ func (srv *server) handlePostUpdatePost() http.HandlerFunc {
 			return
 		}
 
-		r.Body = http.MaxBytesReader(w, r.Body, 4096)
+		// 2 MiB
+		r.Body = http.MaxBytesReader(w, r.Body, 2<<20)
 
 		var form postCreateForm
 		err = srv.decodePostForm(r, &form)
