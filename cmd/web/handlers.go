@@ -11,18 +11,18 @@ import (
 	"github.com/axbrunn/http_web/internals/validator"
 )
 
-func (srv *server) makeHandler(fn func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+func (app *application) makeHandler(fn func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fn(w, r)
 	}
 }
 
-func (srv *server) handleHomeGet() http.HandlerFunc {
+func (app *application) handleHomeGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := srv.newTemplateData(r)
+		data := app.newTemplateData(r)
 		data.ActivePage = "home"
 
-		srv.render(w, r, http.StatusOK, "home.tmpl", data)
+		app.render(w, r, http.StatusOK, "home.tmpl", data)
 	}
 }
 
@@ -36,25 +36,25 @@ type postCreateForm struct {
 	validator.Validator `form:"-"`
 }
 
-func (srv *server) handlePostCreateGet() http.HandlerFunc {
+func (app *application) handlePostCreateGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := srv.newTemplateData(r)
+		data := app.newTemplateData(r)
 		data.ActivePage = "create"
 		data.Form = postCreateForm{}
 
-		srv.render(w, r, http.StatusOK, "create.tmpl", data)
+		app.render(w, r, http.StatusOK, "create.tmpl", data)
 	}
 }
 
-func (srv *server) handlePostCreatePost() http.HandlerFunc {
+func (app *application) handlePostCreatePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// 2 MiB
 		r.Body = http.MaxBytesReader(w, r.Body, 2<<20)
 
 		var form postCreateForm
-		err := srv.decodePostForm(r, &form)
+		err := app.decodePostForm(r, &form)
 		if err != nil {
-			srv.clientError(w, http.StatusBadRequest)
+			app.clientError(w, http.StatusBadRequest)
 			return
 		}
 
@@ -69,40 +69,40 @@ func (srv *server) handlePostCreatePost() http.HandlerFunc {
 		form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
 
 		if !form.Valid() {
-			data := srv.newTemplateData(r)
+			data := app.newTemplateData(r)
 			data.Form = form
 			data.ActivePage = "create"
-			srv.render(w, r, http.StatusUnprocessableEntity, "create.tmpl", data)
+			app.render(w, r, http.StatusUnprocessableEntity, "create.tmpl", data)
 			return
 		}
 
-		s, err := srv.posts.Insert(form.Title, form.Content, form.Excerpt, form.Author, form.Slug)
+		s, err := app.posts.Insert(form.Title, form.Content, form.Excerpt, form.Author, form.Slug)
 		if err != nil {
-			srv.serverError(w, r, err)
+			app.serverError(w, r, err)
 			return
 		}
 
-		srv.sessionMGR.Put(r.Context(), "flash", "Post successfully created!")
+		app.sessionMGR.Put(r.Context(), "flash", "Post successfully created!")
 
 		http.Redirect(w, r, fmt.Sprintf("/posts/%s", s), http.StatusSeeOther)
 	}
 }
 
-func (srv *server) handlePostUpdateGet() http.HandlerFunc {
+func (app *application) handlePostUpdateGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		slug := r.PathValue("slug")
 
-		post, err := srv.posts.Get(slug)
+		post, err := app.posts.Get(slug)
 		if err != nil {
 			if errors.Is(err, models.ErrNoRecord) {
 				http.NotFound(w, r)
 			} else {
-				srv.serverError(w, r, err)
+				app.serverError(w, r, err)
 			}
 			return
 		}
 
-		data := srv.newTemplateData(r)
+		data := app.newTemplateData(r)
 		data.ActivePage = "posts"
 		data.Post = post
 		data.Form = postCreateForm{
@@ -114,15 +114,15 @@ func (srv *server) handlePostUpdateGet() http.HandlerFunc {
 			Content: post.Content,
 		}
 
-		srv.render(w, r, http.StatusOK, "update.tmpl", data)
+		app.render(w, r, http.StatusOK, "update.tmpl", data)
 	}
 }
 
-func (srv *server) handlePostUpdatePost() http.HandlerFunc {
+func (app *application) handlePostUpdatePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(r.PathValue("id"))
 		if err != nil || id < 1 {
-			srv.clientError(w, http.StatusBadRequest)
+			app.clientError(w, http.StatusBadRequest)
 			return
 		}
 
@@ -130,9 +130,9 @@ func (srv *server) handlePostUpdatePost() http.HandlerFunc {
 		r.Body = http.MaxBytesReader(w, r.Body, 2<<20)
 
 		var form postCreateForm
-		err = srv.decodePostForm(r, &form)
+		err = app.decodePostForm(r, &form)
 		if err != nil {
-			srv.clientError(w, http.StatusBadRequest)
+			app.clientError(w, http.StatusBadRequest)
 			return
 		}
 
@@ -148,85 +148,85 @@ func (srv *server) handlePostUpdatePost() http.HandlerFunc {
 		form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
 
 		if !form.Valid() {
-			data := srv.newTemplateData(r)
+			data := app.newTemplateData(r)
 			data.Form = form
 			data.ActivePage = "post"
-			srv.render(w, r, http.StatusUnprocessableEntity, "update.tmpl", data)
+			app.render(w, r, http.StatusUnprocessableEntity, "update.tmpl", data)
 			return
 		}
 
-		s, err := srv.posts.Update(id, form.Title, form.Content, form.Excerpt, form.Author, form.Slug)
+		s, err := app.posts.Update(id, form.Title, form.Content, form.Excerpt, form.Author, form.Slug)
 		if err != nil {
-			srv.serverError(w, r, err)
+			app.serverError(w, r, err)
 			return
 		}
 
-		srv.sessionMGR.Put(r.Context(), "flash", "Post successfully updated!")
+		app.sessionMGR.Put(r.Context(), "flash", "Post successfully updated!")
 
 		http.Redirect(w, r, fmt.Sprintf("/posts/%s", s), http.StatusSeeOther)
 	}
 }
 
-func (srv *server) handlePostDeletePost() http.HandlerFunc {
+func (app *application) handlePostDeletePost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(r.PathValue("id"))
 		if err != nil || id < 1 {
-			srv.clientError(w, http.StatusBadRequest)
+			app.clientError(w, http.StatusBadRequest)
 			return
 		}
 
-		err = srv.posts.Delete(id)
+		err = app.posts.Delete(id)
 		if err != nil {
-			srv.serverError(w, r, err)
+			app.serverError(w, r, err)
 			return
 		}
 
-		srv.sessionMGR.Put(r.Context(), "flash", "Post successfully deleted!")
+		app.sessionMGR.Put(r.Context(), "flash", "Post successfully deleted!")
 
 		http.Redirect(w, r, "/posts", http.StatusSeeOther)
 	}
 }
 
-func (srv *server) handlePostsGet() http.HandlerFunc {
+func (app *application) handlePostsGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		posts, err := srv.posts.Latest()
+		posts, err := app.posts.Latest()
 		if err != nil {
-			srv.serverError(w, r, err)
+			app.serverError(w, r, err)
 		}
 
-		data := srv.newTemplateData(r)
+		data := app.newTemplateData(r)
 		data.ActivePage = "posts"
 		data.Posts = posts
 
-		srv.render(w, r, http.StatusOK, "posts.tmpl", data)
+		app.render(w, r, http.StatusOK, "posts.tmpl", data)
 	}
 }
 
-func (srv *server) handlePostViewGet() http.HandlerFunc {
+func (app *application) handlePostViewGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		slug := r.PathValue("slug")
 
-		post, err := srv.posts.Get(slug)
+		post, err := app.posts.Get(slug)
 		if err != nil {
 			if errors.Is(err, models.ErrNoRecord) {
 				http.NotFound(w, r)
 			} else {
-				srv.serverError(w, r, err)
+				app.serverError(w, r, err)
 			}
 			return
 		}
 
-		htmlContent, err := srv.renderMarkdownToHTML(post.Content)
+		htmlContent, err := app.renderMarkdownToHTML(post.Content)
 		if err != nil {
-			srv.serverError(w, r, err)
+			app.serverError(w, r, err)
 			return
 		}
 
-		data := srv.newTemplateData(r)
+		data := app.newTemplateData(r)
 		data.ActivePage = "posts"
 		data.Post = post
 		data.HTMLContent = template.HTML(htmlContent)
 
-		srv.render(w, r, http.StatusOK, "post.tmpl", data)
+		app.render(w, r, http.StatusOK, "post.tmpl", data)
 	}
 }

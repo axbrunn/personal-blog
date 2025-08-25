@@ -13,45 +13,52 @@ import (
 	"github.com/go-playground/form/v4"
 )
 
-func (srv *server) serverError(w http.ResponseWriter, r *http.Request, err error) {
+func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
 	var (
 		method = r.Method
 		uri    = r.RequestURI
 	)
 
-	srv.logger.Error(err.Error(), "method", method, "uri", uri)
+	app.logger.Error(err.Error(), "method", method, "uri", uri)
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-func (srv *server) clientError(w http.ResponseWriter, status int) {
+func (app *application) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
 
-func (srv *server) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
-	ts, ok := srv.templateCache[page]
+func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
+	ts, ok := app.templateCache[page]
 	if !ok {
 		err := fmt.Errorf("the template %s does not exist", page)
-		srv.serverError(w, r, err)
+		app.serverError(w, r, err)
+		return
+	}
+
+	buf := new(bytes.Buffer)
+
+	err := ts.ExecuteTemplate(buf, "base", data)
+	if err != nil {
+		app.serverError(w, r, err)
 		return
 	}
 
 	w.WriteHeader(status)
 
-	err := ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		srv.serverError(w, r, err)
+	if _, err := buf.WriteTo(w); err != nil {
+		app.serverError(w, r, err)
 	}
 }
 
-func (srv *server) newTemplateData(r *http.Request) templateData {
+func (app *application) newTemplateData(r *http.Request) templateData {
 	return templateData{
 		CurrentYear: time.Now().Year(),
 
-		Flash: srv.sessionMGR.PopString(r.Context(), "flash"),
+		Flash: app.sessionMGR.PopString(r.Context(), "flash"),
 	}
 }
 
-func (srv *server) renderMarkdownToHTML(input string) (string, error) {
+func (app *application) renderMarkdownToHTML(input string) (string, error) {
 	var buf bytes.Buffer
 
 	md := goldmark.New(
@@ -67,7 +74,7 @@ func (srv *server) renderMarkdownToHTML(input string) (string, error) {
 	return buf.String(), nil
 }
 
-func (srv *server) decodePostForm(r *http.Request, dst any) error {
+func (app *application) decodePostForm(r *http.Request, dst any) error {
 	// Call ParseForm() on the request, in the same way that we did in our
 	// snippetCreatePost handler.
 	err := r.ParseForm()
@@ -76,7 +83,7 @@ func (srv *server) decodePostForm(r *http.Request, dst any) error {
 	}
 	// Call Decode() on our decoder instance, passing the target destination as
 	// the first parameter.
-	err = srv.formDecoder.Decode(dst, r.PostForm)
+	err = app.formDecoder.Decode(dst, r.PostForm)
 	if err != nil {
 		var invalidDecoderError *form.InvalidDecoderError
 		if errors.As(err, &invalidDecoderError) {

@@ -18,7 +18,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type server struct {
+type application struct {
 	router        *http.ServeMux
 	logger        *slog.Logger
 	posts         *models.PostModel
@@ -56,7 +56,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer db.Close() // This will now close *after* the server exits
+	defer db.Close() // This will now close *after* the application exits
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
@@ -73,7 +73,7 @@ func run() error {
 	sessionMGR.Store = mysqlstore.New(db)
 	sessionMGR.Lifetime = 12 * time.Hour
 
-	srv := &server{
+	app := &application{
 		logger:        logger,
 		templateCache: templateCache,
 		posts:         &models.PostModel{DB: db},
@@ -81,8 +81,15 @@ func run() error {
 		sessionMGR:    sessionMGR,
 	}
 
-	logger.Info("Started server", slog.String("addr", cfg.addr))
-	return http.ListenAndServe(cfg.addr, srv.routes())
+	srv := &http.Server{
+		Addr:     cfg.addr,
+		Handler:  app.routes(),
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	}
+
+	logger.Info("starting server", "addr", srv.Addr)
+
+	return srv.ListenAndServe()
 }
 
 // The openDB() function wraps sql.Open() and returns a sql.DB connection pool

@@ -18,7 +18,7 @@ func commonHeaders(next http.Handler) http.Handler {
 	})
 }
 
-func (srv *server) logRequest(next http.Handler) http.Handler {
+func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
 			ip     = r.RemoteAddr
@@ -27,13 +27,13 @@ func (srv *server) logRequest(next http.Handler) http.Handler {
 			url    = r.URL.RequestURI()
 		)
 
-		srv.logger.Info("received request", "ip", ip, "proto", proto, "method", method, "url", url)
+		app.logger.Info("received request", "ip", ip, "proto", proto, "method", method, "url", url)
 
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (srv *server) recoverPanic(next http.Handler) http.Handler {
+func (app *application) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			pv := recover()
@@ -42,7 +42,7 @@ func (srv *server) recoverPanic(next http.Handler) http.Handler {
 				w.Header().Set("Connection", "close")
 				// Call the app.serverError helper method to return a 500
 				// Internal Server response.
-				srv.serverError(w, r, fmt.Errorf("%v", pv))
+				app.serverError(w, r, fmt.Errorf("%v", pv))
 			}
 		}()
 		next.ServeHTTP(w, r)
