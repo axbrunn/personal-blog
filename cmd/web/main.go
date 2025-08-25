@@ -89,7 +89,7 @@ func run() error {
 
 	logger.Info("starting server", "addr", srv.Addr)
 
-	return srv.ListenAndServe()
+	return srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 }
 
 // The openDB() function wraps sql.Open() and returns a sql.DB connection pool
