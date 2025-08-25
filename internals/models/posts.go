@@ -33,15 +33,28 @@ func (m *PostModel) Insert(title string, content string, excerpt string, author 
 	return slug, nil
 }
 
+func (m *PostModel) Update(id int, title string, content string, excerpt string, author string, slug string) (string, error) {
+	stmt := `UPDATE blog_posts
+         SET title = ?, content = ?, excerpt = ?, author = ?, slug = ?
+         WHERE id = ?`
+
+	_, err := m.DB.Exec(stmt, title, content, excerpt, author, slug, id)
+	if err != nil {
+		return "", err
+	}
+
+	return slug, nil
+}
+
 func (m *PostModel) Get(slug string) (Post, error) {
-	stmt := `SELECT id, title, content, author, created_at, updated_at, slug FROM blog_posts
+	stmt := `SELECT id, title, content, excerpt, author, created_at, updated_at, slug FROM blog_posts
 WHERE slug = ?`
 
 	row := m.DB.QueryRow(stmt, slug)
 
 	var p Post
 
-	err := row.Scan(&p.ID, &p.Title, &p.Content, &p.Author, &p.Created_at, &p.Updated_at, &p.Slug)
+	err := row.Scan(&p.ID, &p.Title, &p.Content, &p.Excerpt, &p.Author, &p.Created_at, &p.Updated_at, &p.Slug)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Post{}, ErrNoRecord

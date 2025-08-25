@@ -4,12 +4,16 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"github.com/alexedwards/scs/mysqlstore"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/axbrunn/http_web/internals/models"
+	"github.com/go-playground/form"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -19,6 +23,8 @@ type server struct {
 	logger        *slog.Logger
 	posts         *models.PostModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
+	sessionMGR    *scs.SessionManager
 }
 
 type config struct {
@@ -61,10 +67,18 @@ func run() error {
 		return err
 	}
 
+	formDecoder := form.NewDecoder()
+
+	sessionMGR := scs.New()
+	sessionMGR.Store = mysqlstore.New(db)
+	sessionMGR.Lifetime = 12 * time.Hour
+
 	srv := &server{
 		logger:        logger,
 		templateCache: templateCache,
 		posts:         &models.PostModel{DB: db},
+		formDecoder:   formDecoder,
+		sessionMGR:    sessionMGR,
 	}
 
 	logger.Info("Started server", slog.String("addr", cfg.addr))

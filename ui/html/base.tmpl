@@ -3,18 +3,26 @@
     <html lang="en">
     <head>
         <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="htmx-config" content='{"inlineScriptNonce":"R4nd0mStr1ng","includeIndicatorStyles":false}'>
         <title>{{template "title" .}} | albrunn.dev</title>
         <link rel='stylesheet' href='/static/css/styles.css'>
-        <link rel="stylesheet" href="/static/css/chroma-dracula.css">
         <link rel='shortcut icon' href='/static/public/img/favicon.ico' type='image/x-icon'>
+        <script src="/static/js/htmx.min.js"></script>
     </head>
     <body>
         <div class="layout">
             <header>
                {{template "header" .}}
             </header>
+            <aside class="site-nav">
+                {{template "aside" .}}
+            </aside>
             <main>
                 <div class="container">
+                    {{with .Flash}}
+                        <div class='flash'>{{.}}</div>
+                    {{end}}
                     {{template "main" .}}
                 </div>
             </main>

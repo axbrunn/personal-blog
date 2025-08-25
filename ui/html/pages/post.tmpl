@@ -2,12 +2,18 @@
 
 {{define "main"}}
     <article>
+        <div>
+            <small class="post_author">{{ .Post.Author }}</small>
+            <small>, {{ humanDate .Post.Created_at }}</small>
+        </div>
+        {{ .HTMLContent }}
         <div class="flex_row_between">
-            <small>{{ .Post.Created_at }}</small>
             <form action="/posts/delete/{{ .Post.ID }}" method="POST">
                 <button class="delete-button" type="submit">Delete</button>
             </form>
+            <form action="/posts/update/{{ .Post.Slug }}" method="GET">
+                <button class="update-button" type="submit">Update</button>
+            </form>
         </div>
-        {{ .HTMLContent }}
     </article>
 {{end}}

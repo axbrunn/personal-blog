@@ -2,13 +2,15 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
-	chromahtml "github.com/alecthomas/chroma/formatters/html"
-	"github.com/yuin/goldmark"
-	highlighting "github.com/yuin/goldmark-highlighting"
-	"github.com/yuin/goldmark/parser"
 	"net/http"
 	"time"
+
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/parser"
+
+	"github.com/go-playground/form/v4"
 )
 
 func (srv *server) serverError(w http.ResponseWriter, r *http.Request, err error) {
@@ -44,6 +46,8 @@ func (srv *server) render(w http.ResponseWriter, r *http.Request, status int, pa
 func (srv *server) newTemplateData(r *http.Request) templateData {
 	return templateData{
 		CurrentYear: time.Now().Year(),
+
+		Flash: srv.sessionMGR.PopString(r.Context(), "flash"),
 	}
 }
 
@@ -51,15 +55,6 @@ func (srv *server) renderMarkdownToHTML(input string) (string, error) {
 	var buf bytes.Buffer
 
 	md := goldmark.New(
-		goldmark.WithExtensions(
-			highlighting.NewHighlighting(
-				highlighting.WithStyle("dracula"),
-				highlighting.WithFormatOptions(
-					chromahtml.WithLineNumbers(true),
-					chromahtml.WithClasses(true),
-				),
-			),
-		),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),
 		),
@@ -70,4 +65,25 @@ func (srv *server) renderMarkdownToHTML(input string) (string, error) {
 	}
 
 	return buf.String(), nil
+}
+
+func (srv *server) decodePostForm(r *http.Request, dst any) error {
+	// Call ParseForm() on the request, in the same way that we did in our
+	// snippetCreatePost handler.
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+	// Call Decode() on our decoder instance, passing the target destination as
+	// the first parameter.
+	err = srv.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		var invalidDecoderError *form.InvalidDecoderError
+		if errors.As(err, &invalidDecoderError) {
+			panic(err)
+		}
+		// For all other errors, return them as normal.
+		return err
+	}
+	return nil
 }

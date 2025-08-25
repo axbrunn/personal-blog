@@ -4,24 +4,44 @@
     <form action='/posts/create' method='POST'>
         <div class="flex_row_between">
             <div>
-                <label for="author">Author:</label>
-                <input type="text" id="author" name="author" required>
+                <label for="author" class="label-with-error">Author:
+                    {{with .Form.FieldErrors.author}}
+                        <span class='error'>{{.}}</span>
+                    {{end}}
+                </label>
+                <input type="text" id="author" name="author" value='{{.Form.Author}}'>
             </div>
 
             <div>
-                <label for="slug">Slug (URL-friendly):</label>
-                <input type="text" id="slug" name="slug" required>
+                <label for="slug" class="label-with-error">Slug (URL-friendly):
+                {{with .Form.FieldErrors.slug}}
+                    <span class='error'>{{.}}</span>
+                {{end}}
+                </label>
+                <input type="text" id="slug" name="slug" value='{{.Form.Slug}}'>
             </div>
         </div>
 
-        <label for="title">Title:</label>
-        <input type="text" id="title" name="title" required>
+        <label for="title" class="label-with-error">Title:
+        {{with .Form.FieldErrors.title}}
+            <span class='error'>{{.}}</span>
+        {{end}}
+        </label>
+        <input type="text" id="title" name="title" value='{{.Form.Title}}'>
 
-        <label for="excerpt">Excerpt:</label>
-        <textarea id="excerpt" name="excerpt" rows="3"></textarea>
+        <label for="excerpt" class="label-with-error">Excerpt:
+        {{with .Form.FieldErrors.excerpt}}
+            <span class='error'>{{.}}</span>
+        {{end}}
+        </label>
+        <textarea id="excerpt" name="excerpt" rows="3">{{.Form.Excerpt}}</textarea>
 
-        <label for="content">Content (Markdown):</label>
-        <textarea id="content" name="content" rows="18" required></textarea>
+        <label for="content" class="label-with-error">Content (Markdown):
+        {{with .Form.FieldErrors.content}}
+            <span class='error'>{{.}}</span>
+        {{end}}
+        </label>
+        <textarea id="content" name="content" rows="18">{{.Form.Content}}</textarea>
 
         <input type="submit" value="Create Post">
     </form>
