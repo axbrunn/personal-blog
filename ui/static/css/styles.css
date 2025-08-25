@@ -1,7 +1,7 @@
 :root {
     --rp-base: #232136;
     --rp-surface: #2a273f;
-    --rp-surface-header: rgba(42, 39, 63, 0.95);
+    --rp-surface-header: rgba(156, 207, 216, 0.90);
     --rp-overlay: #393552;
     --rp-subtle: #908caa;
     --rp-text: #e0def4;
@@ -15,7 +15,7 @@
     :root {
         --rp-base: #faf4ed;
         --rp-surface: #fffaf3;
-        --rp-surface-header: rgba(255, 250, 243, 0.95);
+        --rp-surface-header: rgba(40, 105, 131, 0.90);
         --rp-overlay: #f2e9e1;
         --rp-subtle: #9893a5;
         --rp-text: #575279;
@@ -55,6 +55,13 @@ h2 {
 }
 h3 {
     font-size:1.25rem
+}
+
+ul
+{
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 label {
@@ -134,26 +141,25 @@ p code, li code {
         "main"
         "footer";
     grid-template-columns: 1fr;
-    grid-template-rows: auto;
+    grid-template-rows: auto auto 1fr auto;
 }
 
 @media (min-width: 768px) {
     .layout {
-        /* Brede layout */
         grid-template-areas:
             "header header"
             "aside main"
             "footer footer";
         grid-template-columns: 18rem 1fr;
         grid-template-rows: auto 1fr auto;
-        gap: 2rem;
     }
 }
 
 header {
     grid-area: header;
-    padding: 1rem;
-    background-color: var(--rp-surface);
+    display: flex;
+    height: 4rem;
+    background-color: var(--rp-surface-header);
     border-bottom: 1px solid var(--rp-overlay);
     position: sticky;
     top: 0;
@@ -167,7 +173,6 @@ main {
 
 footer {
     grid-area: footer;
-    padding: 1rem;
     text-align: center;
     background-color: var(--rp-surface);
     border-top: 1px solid var(--rp-overlay);
@@ -184,12 +189,9 @@ footer a:hover {
 }
 
 aside {
-    background-color: var(--rp-surface-header);
+    background-color: var(--rp-surface);
     font-size: 0.875rem;
     grid-area: aside;
-    padding: 1rem;
-
-    /* Sticky behavior for large screens */
     position: static;
 }
 
@@ -227,9 +229,8 @@ aside {
     width: 100%;
 }
 
-
 .container {
-    margin: 0 auto;
+    margin: 2rem auto;
     max-width: 1080px;
     width: 100%;
 }
@@ -259,43 +260,34 @@ aside {
 
 header span a {
     font-weight:700;
-    font-size: 18px;
+    font-size: 24px;
     padding: 1rem;
-    color: var(--rp-foam);
+    color: var(--rp-base);
     text-decoration: none;
     margin-right: 2rem;
 }
 
 /* Nav */
 nav {
-    background-color: transparent;
     font-size: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 nav a {
-    display: inline-block;
     color: var(--rp-foam);
     text-decoration: none;
-    padding: 1rem;
     font-size: 18px;
-    min-width: 60px;
-    text-align: center;
+    padding: 1rem;
 }
 
 nav a:hover {
     color: var(--rp-iris);
-    background-color: var(--rp-base);
 }
 
 nav a.active {
-    text-decoration: underline wavy;
-    text-underline-offset: 6px;
-}
-
-/* Main */
-main {
-    grid-area: main;
-    padding: 2rem 1rem;
+    background-color: var(--rp-overlay);
 }
 
 code,
@@ -318,10 +310,10 @@ textarea.code {
     display: block;
 }
 
-@media (max-width: 800px) {
+@media screen and (width <= 50rem) {
     pre {
-        margin: 1rem auto 0 auto;
-        max-width: 90vw;
+        margin: 1rem auto;
+        max-width: 80vw;
     }
 }
 

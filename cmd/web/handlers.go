@@ -150,7 +150,7 @@ func (srv *server) handlePostUpdatePost() http.HandlerFunc {
 		if !form.Valid() {
 			data := srv.newTemplateData(r)
 			data.Form = form
-			data.ActivePage = "create"
+			data.ActivePage = "post"
 			srv.render(w, r, http.StatusUnprocessableEntity, "update.tmpl", data)
 			return
 		}
